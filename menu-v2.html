@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pizza Énergie — La carte</title>
+<style>
+  :root {
+    --bg: #FFF5F6;
+    --card: #F5EAEC;
+    --ink: #221719;
+    --muted: #6E5A60;
+    --primary: #BF385C;
+    --accent: #197F53;
+    --secondary: #FED1D7;
+    --line: #E5DADB;
+    --hard: #221719;
+    --on-fill: #FFFFFF;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0F0909;
+      --card: #1A1314;
+      --ink: #FEEDEF;
+      --muted: #C9AEB3;
+      --primary: #CA4265;
+      --accent: #11BB79;
+      --secondary: #472027;
+      --line: #261F20;
+      --hard: #000000;
+      --on-fill: #FFFFFF;
+      --price: #E4708E;
+      color-scheme: dark;
+    }
+  }
+  :root { --price: var(--primary); }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui,sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    overflow-x: clip;
+  }
+  .page { max-width: 1120px; margin: 0 auto; padding-bottom: 72px; }
+
+  /* ---- Ticker défilant ---- */
+  .ticker { background: var(--ink); color: var(--bg); overflow: hidden; margin-inline: calc(50% - 50vw); }
+  .ticker-track { display: flex; width: max-content; animation: ticker 44s linear infinite; }
+  .ticker span { display: block; padding: 10px 14px; white-space: nowrap; font-size: 13px;
+    letter-spacing: .14em; text-transform: uppercase; font-weight: 600; }
+  .ticker em { font-style: normal; opacity: .55; padding: 0 10px; }
+  @keyframes ticker { to { transform: translateX(-50%); } }
+
+  /* ---- Header poster ---- */
+  .poster { display: grid; grid-template-columns: auto 1fr auto; gap: 26px; align-items: center;
+    padding: 46px 22px 34px; }
+  .mark { width: 108px; height: 108px; }
+  .poster h1 { font-size: clamp(34px, 6vw, 56px); line-height: .98; letter-spacing: -.02em;
+    margin: 0; font-weight: 800; }
+  .poster h1 .alt { color: var(--primary); }
+  .poster .tag { margin: 12px 0 0; color: var(--muted); font-size: 15px; }
+  .sticker { background: var(--secondary); border: 2px solid var(--ink); border-radius: 14px;
+    padding: 14px 18px; box-shadow: 5px 5px 0 var(--hard); text-align: center;
+    transform: rotate(3deg); }
+  .sticker small { display: block; font-size: 11px; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--muted); }
+  .sticker b { display: block; font-size: 20px; margin-top: 2px; }
+
+  /* ---- Sections ---- */
+  section { padding: 26px 22px 8px; }
+  h2 { font-size: 15px; letter-spacing: .16em; text-transform: uppercase; margin: 0 0 18px;
+    display: flex; align-items: center; gap: 12px; }
+  h2::after { content: ""; flex: 1; height: 2px; background: var(--line); }
+  h2 .count { font-size: 11px; color: var(--muted); letter-spacing: .1em; }
+
+  /* ---- Du moment ---- */
+  .du-moment { background: var(--primary); color: var(--on-fill); border: 2px solid var(--ink);
+    border-radius: 18px; padding: 22px 24px; box-shadow: 7px 7px 0 var(--hard); margin: 4px 22px 10px; }
+  .du-moment .eyebrow { font-size: 11px; letter-spacing: .18em; text-transform: uppercase;
+    opacity: .75; }
+  .du-moment .row { display: flex; align-items: baseline; gap: 10px; margin-top: 6px; }
+  .du-moment .name { font-size: 24px; font-weight: 700; letter-spacing: -.01em; }
+  .du-moment .price { margin-left: auto; font-size: 22px; font-weight: 700; white-space: nowrap; }
+  .du-moment .desc { margin: 8px 0 0; opacity: .9; font-size: 14.5px; }
+  .du-moment .note { margin: 10px 0 0; font-size: 13px; font-style: italic; opacity: .8; }
+
+  /* ---- Liste des pizzas ---- */
+  .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
+  .item { background: var(--card); border: 2px solid var(--ink); border-radius: 14px;
+    padding: 16px 18px; box-shadow: 4px 4px 0 var(--hard); transition: transform .12s ease,
+    box-shadow .12s ease; }
+  .item:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--hard); }
+  .item .row { display: flex; align-items: baseline; gap: 10px; }
+  .item .name { font-weight: 700; font-size: 16.5px; letter-spacing: -.01em; }
+  .item .leader { flex: 1; border-bottom: 2px dotted var(--line); transform: translateY(-4px); }
+  .item .price { font-weight: 700; color: var(--price); white-space: nowrap;
+    font-variant-numeric: tabular-nums; }
+  .item .desc { margin: 7px 0 0; color: var(--muted); font-size: 13.5px; line-height: 1.45; }
+
+  /* ---- Desserts, boissons, options ---- */
+  .simple { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+  .simple .item { padding: 13px 16px; box-shadow: 3px 3px 0 var(--hard); }
+  .simple .item .name { font-size: 15px; }
+  .simple .item .price { font-size: 15px; }
+  .options { display: flex; flex-wrap: wrap; gap: 10px; }
+  .option { background: var(--secondary); border: 2px solid var(--ink); border-radius: 999px;
+    padding: 8px 16px; font-size: 14px; box-shadow: 3px 3px 0 var(--hard); }
+
+  /* ---- CTA ---- */
+  .cta-wrap { padding: 40px 22px 0; text-align: center; }
+  .cta { display: inline-flex; align-items: center; gap: 12px; background: var(--ink);
+    color: var(--bg); text-decoration: none; font-weight: 700; font-size: 17px;
+    padding: 16px 30px; border-radius: 14px; box-shadow: 5px 5px 0 rgba(0,0,0,.25); }
+  .cta:hover { transform: translateY(-2px); }
+  .cta small { display: block; font-weight: 400; opacity: .7; font-size: 12px; }
+
+  footer { margin-top: 46px; padding-top: 18px; text-align: center; color: var(--muted);
+    font-size: 13px; position: relative; }
+  footer::before { content: ""; position: absolute; top: 0; left: 22px; right: 22px; height: 2px;
+    background: var(--line); }
+
+  @media (max-width: 640px) {
+    .poster { grid-template-columns: auto 1fr; }
+    .sticker { grid-column: 1 / -1; justify-self: start; transform: rotate(-2deg); }
+    .du-moment { margin-inline: 16px; }
+    section { padding-inline: 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track" id="ticker-track">
+      <span>Pizza Énergie<em>/</em>Pizzas 33&nbsp;cm<em>/</em>Faites maison<em>/</em>La 10e offerte<em>/</em>Tous les soirs dès 18h<em>/</em></span>
+      <span>Pizza Énergie<em>/</em>Pizzas 33&nbsp;cm<em>/</em>Faites maison<em>/</em>La 10e offerte<em>/</em>Tous les soirs dès 18h<em>/</em></span>
+    </div>
+  </div>
+
+  <header class="poster">
+    <svg class="mark" viewBox="0 0 120 120" role="img" aria-label="Logo : une part de pizza">
+      <path d="M 60 14 A 47 47 0 0 1 107 44 L 60 112 Z" fill="#BF385C" stroke="#221719" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M 60 32 A 31 31 0 0 1 92 51 L 60 96 Z" fill="#FFF5F6" stroke="#221719" stroke-width="3" stroke-linejoin="round"/>
+      <circle cx="60" cy="52" r="6.5" fill="#BF385C" stroke="#221719" stroke-width="2.5"/>
+      <circle cx="50" cy="72" r="5" fill="#BF385C" stroke="#221719" stroke-width="2.5"/>
+      <circle cx="71" cy="76" r="5" fill="#BF385C" stroke="#221719" stroke-width="2.5"/>
+      <ellipse cx="66" cy="60" rx="4.5" ry="2.6" fill="#197F53" transform="rotate(-30 66 60)"/>
+      <ellipse cx="54" cy="84" rx="4.5" ry="2.6" fill="#197F53" transform="rotate(25 54 84)"/>
+    </svg>
+    <div>
+      <h1>Pizza<br><span class="alt">Énergie</span></h1>
+      <p class="tag">Pizzas 33&nbsp;cm, faites maison, à emporter</p>
+    </div>
+    <div class="sticker">Fidélité<b>La 10e offerte</b></div>
+  </header>
+
+  <div class="du-moment" id="du-moment">
+    <span class="eyebrow">La du moment</span>
+    <div class="row">
+      <span class="name" id="moment-name">…</span>
+      <span class="price" id="moment-price"></span>
+    </div>
+    <p class="desc" id="moment-desc"></p>
+    <p class="note" id="moment-note" style="display:none;"></p>
+  </div>
+
+  <section>
+    <h2>Nos pizzas <span class="count" id="count-pizzas"></span></h2>
+    <div class="grid" id="pizza-list"></div>
+  </section>
+
+  <section>
+    <h2>Desserts <span class="count" id="count-desserts"></span></h2>
+    <div class="simple" id="dessert-list"></div>
+  </section>
+
+  <section>
+    <h2>Boissons <span class="count" id="count-drinks"></span></h2>
+    <div class="simple" id="drink-list"></div>
+  </section>
+
+  <section>
+    <h2>Options</h2>
+    <div class="options" id="option-list"></div>
+  </section>
+
+  <div class="cta-wrap">
+    <a class="cta" href="tel:+33609526418">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      <span>Commander<small>06 09 52 64 18</small></span>
+    </a>
+  </div>
+
+  <footer id="foot">maj <span id="foot-maj">—</span></footer>
+</div>
+
+<script>
+/* ---- Menu en temps réel ----
+   Lit le gist miroir (même source que index.html), re-vérifie toutes
+   les 30 s. En cas d'échec réseau au premier chargement, un menu de
+   secours intégré s'affiche. ?force=1 force le menu de secours. */
+var GIST_RAW="https://gist.githubusercontent.com/BTDeku7274/398d15692922469cc2062da491592f2c/raw/menu.json";
+var LOCAL={
+  moment:{name:"Roq'n'Beef",price:"12,50",desc:"Viande hachée, roquefort, crème, olives.",note:"La préférée des habitués — demande-la même bien cuite."},
+  pizzas:[["Marguerite","9,20","Tomate, fromage, olives."],["Napolitaine","10,20","Anchois, olives."],["Chorizo","10,40","Chorizo, olives."],["Neptune","10,40","Thon, câpres, olives."],["Reine","10,60","Jambon, champignons, olives."],["Roquefort","10,90","Roquefort, olives."],["Chèvre","11,00","Champignons, chèvre, olives."],["Provençale","11,20","Jambon, mozzarella, sauce basilic, olives."],["Énergie","11,30","Merguez, poivrons, oeuf, olives."],["4 Saisons","11,50","Jambon, champignons, poivrons."],["Spéciale","11,50","Viande hachée, champignons, poivrons."],["4 Fromages","11,50","Roquefort, mozzarella, chèvre, olives."],["Fruits de Mer","11,50","Moules, crevettes, encornets, calamars, sauce persillade, olives."],["Mozzarella","11,50","Jambon, champignons, mozzarella, olives."],["Montagnarde","11,50","Lardons fumés, champignons, crème fraîche, olives."],["Paysane","11,50","Lardons fumés, champignons, oeuf, olives."],["Savoyarde","11,50","Reblochon, olives."],["Fermière","11,50","Base crème fraîche, jambon de serrano, chèvre, olives."],["Aubergine","11,50","Aubergine, mozzarella, persillade, olives."],["Norvégienne","12,00","Saumon fumé, crème fraîche, olives."],["Kebab","12,20","Viande kebab hallal, poivrons, sauce kebab, olives."],["Tartiflette","12,20","Base crème, pomme de terre, oignons, lardons fumés, reblochon, olives."],["Hawaïenne","12,20","Poulet, ananas, oignons, curry, olives."],["La Burger","12,20","Viande hachée, oignons, jambon serrano, sauce burger, cornichons, olives."]].map(function(p){return{name:p[0],price:p[1],desc:p[2]};}),
+  desserts:[{name:"Nutella",price:"6,00"},{name:"Nutella / Poire",price:"6,50"}],
+  drinks:[{name:"Coca-Cola, Coca Zero, Oasis, Fanta, Ice Tea, eau minérale 50 cl",price:"1,80"},{name:"Heineken 33 cl",price:"2,00"},{name:"Red Bull",price:"3,00"},{name:"Coca-Cola bouteille 1,25 L",price:"3,50"},{name:"Vin rouge, vin rosé",price:"7,50"}],
+  options:[{label:"Supplément ingrédient",price:"+1"},{label:"Supplément base crème",price:"+1"}],
+  meta:{updated:"03.11"}
+};
+
+(function(){
+"use strict";
+var $=function(id){return document.getElementById(id);};
+var remote=false;
+
+function e(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){
+  return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+
+function pizzaHtml(it){
+  return '<div class="item"><div class="row"><span class="name">'+e(it.name)+
+    '</span><span class="leader"></span><span class="price">'+e(it.price)+'&nbsp;€</span></div>'+
+    (it.desc?'<p class="desc">'+e(it.desc)+'</p>':"")+'</div>';
+}
+function simpleHtml(it){
+  return '<div class="item"><div class="row"><span class="name">'+e(it.name||it.label)+
+    '</span><span class="leader"></span><span class="price">'+e(it.price)+
+    (String(it.price).indexOf("+")===0||String(it.price).indexOf("€")>-1?"":"&nbsp;€")+'</span></div></div>';
+}
+
+function render(d){
+  var m=d.moment||{};
+  $("moment-name").textContent=m.name||"";
+  $("moment-price").textContent=m.price?m.price+" €":"";
+  $("moment-desc").textContent=m.desc||"";
+  var n=$("moment-note");
+  if(m.note){n.textContent=m.note;n.style.display="";}else{n.style.display="none";}
+  $("pizza-list").innerHTML=(d.pizzas||[]).map(pizzaHtml).join("");
+  $("dessert-list").innerHTML=(d.desserts||[]).map(simpleHtml).join("");
+  $("drink-list").innerHTML=(d.drinks||[]).map(simpleHtml).join("");
+  $("option-list").innerHTML=(d.options||[]).map(function(o){
+    return '<span class="option">'+e(o.label)+' <b>'+e(o.price)+(String(o.price).indexOf("+")===0?"":"&nbsp;€")+'</b></span>';
+  }).join("");
+  $("count-pizzas").textContent="· "+(d.pizzas||[]).length;
+  $("count-desserts").textContent="· "+(d.desserts||[]).length;
+  $("count-drinks").textContent="· "+(d.drinks||[]).length;
+  $("foot-maj").textContent=(d.meta&&d.meta.updated)||"—";
+}
+
+function useLocal(){render(LOCAL);}
+function load(){
+  fetch(GIST_RAW+"?t="+Date.now(),{cache:"no-store"})
+    .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+    .then(function(d){ remote=true; render(d); })
+    .catch(function(){ if(!remote) useLocal(); });
+}
+
+load();
+setInterval(load,30000);
+})();
+</script>
+</body>
+</html>

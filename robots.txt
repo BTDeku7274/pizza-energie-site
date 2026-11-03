@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+
+Sitemap: https://btdeku7274.github.io/pizza-energie-site/sitemap.xml
