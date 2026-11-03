@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pizza Énergie — Gestion du menu</title>
+<style>
+  :root{
+    --bg:#0b0b0d;--surface:#16161b;--surface-2:#1e1e24;--line:#2a2a31;--line-soft:#202027;
+    --ink:#f4f3f0;--muted:#8b8b93;--faint:#62626a;--pure:#fff;--on-pure:#0b0b0d;
+    --heart:#ff5566;--crust:#ffb15c;
+    --shadow:0 1px 1px rgba(0,0,0,.22),0 28px 58px -34px rgba(0,0,0,.75);
+    --divider:linear-gradient(90deg,var(--line),transparent);
+    --radius-card:16px;--radius-btn:10px;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui,sans-serif;
+    --mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Code",Menlo,monospace;
+  }
+  @media (prefers-color-scheme:light){
+    :root{--bg:#f4f2ee;--surface:#ffffff;--surface-2:#f2f1ec;--line:#e3e2dd;--line-soft:#edece8;
+      --ink:#151312;--muted:#6d6a66;--faint:#9a9894;--pure:#151312;--on-pure:#fff;
+      --heart:#e23a4c;--crust:#c96f1e;
+      --shadow:0 1px 1px rgba(30,30,45,.04),0 24px 46px -32px rgba(30,30,45,.20);}
+  }
+  *{box-sizing:border-box;}
+  html{color-scheme:light dark;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.5;
+    -webkit-font-smoothing:antialiased;min-height:100vh;}
+  @keyframes rise{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}
+  .page{max-width:760px;margin:0 auto;padding:40px 24px 72px;}
+  header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-bottom:30px;}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .brandname{font-family:var(--mono);font-size:16px;font-weight:700;letter-spacing:.15em;
+    display:inline-flex;align-items:center;gap:6px;}
+  .brandname .tv{background:var(--ink);color:var(--bg);border-radius:6px;padding:2px 6px 2px 7px;
+    font-size:12.5px;letter-spacing:.06em;}
+  .intro{padding-bottom:26px;}
+  .intro h1{font-size:30px;line-height:1.12;letter-spacing:-.02em;font-weight:600;margin:0 0 10px;}
+  .lede{color:var(--muted);font-size:15px;max-width:52ch;margin:0;}
+
+  .card{background:var(--surface);border-radius:var(--radius-card);padding:22px 22px 20px;
+    box-shadow:var(--shadow);margin-bottom:14px;animation:rise .7s cubic-bezier(.2,.7,.2,1) both;}
+  .card:nth-of-type(2){animation-delay:.06s;}
+  .card:nth-of-type(3){animation-delay:.1s;}
+  .card:nth-of-type(4){animation-delay:.14s;}
+  .card:nth-of-type(5){animation-delay:.18s;}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--faint);margin-bottom:14px;}
+  .card-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;}
+  .app{font-size:17px;font-weight:600;letter-spacing:-.01em;}
+  .pill{font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--muted);
+    background:var(--surface-2);border-radius:999px;padding:4px 11px;white-space:nowrap;}
+
+  .btn{font-family:var(--sans);font-size:13.5px;font-weight:550;border-radius:var(--radius-btn);
+    padding:11px 18px;cursor:pointer;border:1px solid transparent;text-decoration:none;
+    display:inline-flex;align-items:center;gap:8px;
+    transition:transform .12s ease,opacity .12s ease,background .15s ease;}
+  .btn:active{transform:translateY(1px);}
+  .btn:focus-visible{outline:2px solid var(--ink);outline-offset:2px;}
+  .btn-primary{background:var(--pure);color:var(--on-pure);}
+  .btn-primary:hover{opacity:.88;}
+  .btn-ghost{background:var(--surface-2);color:var(--ink);}
+  .btn-ghost:hover{background:var(--line-soft);}
+  .btn-danger{background:transparent;color:var(--heart);border-color:var(--line);}
+  .btn-danger:hover{border-color:var(--heart);}
+  .btn:disabled{opacity:.45;cursor:default;}
+  .btn .arw{font-family:var(--mono);font-size:13px;}
+
+  .msg{font-family:var(--mono);font-size:11.5px;min-height:1em;letter-spacing:.03em;}
+  .msg.ok{color:var(--crust);}
+  .msg.err{color:var(--heart);}
+  .row-btns{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+
+  /* setup */
+  .setup p{color:var(--muted);font-size:14px;margin:0 0 16px;}
+  .setup strong{color:var(--ink);}
+  .idbox{display:flex;gap:8px;align-items:center;margin-top:6px;}
+  .idbox input{flex:1;font-family:var(--mono);font-size:13px;color:var(--ink);
+    background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:11px 13px;}
+  .idbox input:focus{outline:none;border-color:var(--muted);}
+
+  /* formulaire */
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--faint);margin-bottom:6px;}
+  .field input,.field textarea{width:100%;font-family:var(--sans);font-size:13.5px;color:var(--ink);
+    background:var(--surface-2);border:1px solid transparent;border-radius:10px;padding:11px 13px;
+    transition:border-color .15s ease;}
+  .field input:focus,.field textarea:focus{outline:none;border-color:var(--line);}
+  .field textarea{resize:vertical;min-height:60px;line-height:1.5;}
+  .field .code{font-family:var(--mono);}
+  .grid2{display:grid;grid-template-columns:1fr 130px;gap:10px;}
+  .grid2 .field{margin-bottom:0;}
+
+  /* listes éditables */
+  .elist{list-style:none;margin:0;padding:0;display:grid;gap:10px;}
+  .eli{background:var(--surface-2);border-radius:12px;padding:12px 14px;display:grid;gap:10px;}
+  .eli .eline{display:grid;grid-template-columns:1fr 110px 34px;gap:8px;align-items:center;}
+  .eli input{font-family:var(--sans);font-size:13px;color:var(--ink);background:var(--surface);
+    border:1px solid transparent;border-radius:8px;padding:9px 11px;min-width:0;}
+  .eli input.p{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums;}
+  .eli input.d{font-size:12.5px;color:var(--muted);}
+  .eli input:focus{outline:none;border-color:var(--line);}
+  .eli .del{width:34px;height:38px;border-radius:8px;border:0;background:transparent;
+    color:var(--faint);font-size:16px;cursor:pointer;transition:color .15s ease;}
+  .eli .del:hover{color:var(--heart);}
+  .eli .dwrap{display:none;}
+  .eli.has-desc .dwrap{display:block;}
+  .addbtn{margin-top:12px;}
+  .hint{font-family:var(--mono);font-size:10.5px;color:var(--faint);letter-spacing:.03em;
+    margin:8px 0 0;}
+  .savebar{position:sticky;bottom:14px;margin-top:22px;display:flex;gap:10px;align-items:center;
+    background:var(--surface);border-radius:14px;padding:14px 16px;box-shadow:var(--shadow);}
+  footer{margin-top:40px;padding-top:20px;font-family:var(--mono);font-size:11.5px;color:var(--faint);
+    letter-spacing:.03em;position:relative;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+  footer::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;
+    background:linear-gradient(90deg,transparent,var(--line),transparent);}
+  footer a{color:var(--muted);text-decoration:none;border-bottom:1px solid var(--line-soft);}
+  @media (max-width:560px){.eli .eline{grid-template-columns:1fr 86px 30px;}}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="brand"><span class="brandname">PIZZA<span class="tv">ADMIN</span></span></div>
+    <a class="btn btn-ghost" href="index.html">Voir le site <span class="arw">&rarr;</span></a>
+  </header>
+
+  <!-- Étape 0 : connexion GitHub -->
+  <section class="card setup" id="setup-card">
+    <div class="eyebrow">Connexion GitHub &mdash; une seule fois</div>
+    <p id="setup-p">Le menu vit dans le repo priv&eacute; <code>pizza-energie</code> (fichier <code>menu.json</code>) et est publi&eacute; en lecture via un gist miroir. Connecte-toi avec un <strong>token GitHub</strong> (scope <code>repo</code> + <code>gist</code>) : il reste dans ce navigateur, jamais sur le site. Cr&eacute;e-le sur <a href="https://github.com/settings/tokens" target="_blank" rel="noopener noreferrer" style="color:var(--muted);">github.com/settings/tokens</a>.</p>
+    <div class="idbox">
+      <input id="token-input" type="password" placeholder="Token GitHub (ghp_… ou github_pat_…)" autocomplete="off">
+      <button class="btn btn-primary" id="btn-save-id">Se connecter</button>
+    </div>
+    <p class="msg" id="setup-msg" style="margin:14px 0 0;"></p>
+  </section>
+
+  <!-- Édition -->
+  <div id="editor" style="display:none;">
+
+    <section class="card">
+      <div class="card-top"><div class="app">La du moment</div><span class="pill">carte vedette</span></div>
+      <div style="margin-top:16px;">
+        <div class="field"><label>Nom</label><input id="f-moment-name"></div>
+        <div class="grid2">
+          <div class="field"><label>Description (sous le nom, sur le site)</label><input id="f-moment-desc"></div>
+          <div class="field"><label>Prix &euro;</label><input id="f-moment-price" class="code" inputmode="decimal"></div>
+        </div>
+        <div class="field"><label>Note (ligne libre, optionnelle)</label><textarea id="f-moment-note" placeholder="ex : la préférée des habitués — même bien cuite"></textarea></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-top"><div class="app">Nos pizzas</div><span class="pill" id="count-pizzas">0</span></div>
+      <ul class="elist" id="list-pizzas" style="margin-top:16px;"></ul>
+      <button class="btn btn-ghost addbtn" data-add="pizzas">+ Ajouter une pizza</button>
+    </section>
+
+    <section class="card">
+      <div class="card-top"><div class="app">Desserts</div><span class="pill" id="count-desserts">0</span></div>
+      <ul class="elist" id="list-desserts" style="margin-top:16px;"></ul>
+      <button class="btn btn-ghost addbtn" data-add="desserts">+ Ajouter un dessert</button>
+    </section>
+
+    <section class="card">
+      <div class="card-top"><div class="app">Boissons</div><span class="pill" id="count-drinks">0</span></div>
+      <ul class="elist" id="list-drinks" style="margin-top:16px;"></ul>
+      <button class="btn btn-ghost addbtn" data-add="drinks">+ Ajouter une boisson</button>
+    </section>
+
+    <section class="card">
+      <div class="card-top"><div class="app">Options</div><span class="pill" id="count-options">0</span></div>
+      <ul class="elist" id="list-options" style="margin-top:16px;"></ul>
+      <button class="btn btn-ghost addbtn" data-add="options">+ Ajouter une option</button>
+      <p class="hint">Prix sans « € » &mdash; tape « +1 » pour un supplément.</p>
+    </section>
+
+    <div class="savebar">
+      <button class="btn btn-primary" id="btn-save">Enregistrer <span class="arw">&darr;</span></button>
+      <span class="msg" id="save-msg"></span>
+    </div>
+  </div>
+
+  <footer>
+    <span>Les changements sont visibles sur le site en 30&nbsp;s max.</span>
+    <a href="index.html">pizza-energie</a>
+  </footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+var LS="pizza_blob_id";
+var $=function(id){return document.getElementById(id);};
+
+/* ---------- état ---------- */
+var DATA=null, TOKEN=null;
+var REPO="BTDeku7274/pizza-energie", BRANCH="main", FILE="menu.json", PATH="menu.json";
+var GIST_ID="398d15692922469cc2062da491592f2c", GIST_FILE="menu.json";
+
+/* ---------- setup ---------- */
+function showSetupMsg(txt,ok){var m=$("setup-msg");m.textContent=txt;m.className="msg "+(ok?"ok":"err");}
+
+function enterEditor(){
+  $("setup-card").style.display="none";
+  $("editor").style.display="";
+  if(!DATA) DATA=blank();
+  bindLists(); renderAll();
+}
+
+function enterSetup(msg){
+  $("setup-card").style.display="";
+  $("editor").style.display="none";
+  if(msg) showSetupMsg(msg,true);
+}
+
+function blank(){
+  return {moment:{name:"",price:"",desc:"",note:""},
+    pizzas:[],desserts:[],drinks:[],options:[],meta:{updated:"—"}};
+}
+
+/* API helpers */
+function gh(path){
+  return fetch("https://api.github.com"+path,{
+    headers:{"Authorization":"Bearer "+TOKEN,"Accept":"application/vnd.github+json"}
+  });
+}
+
+/* décode le contenu base64 de l'API en vrai UTF-8 (atob seul
+   rend du latin-1 et casse les accents) */
+function b64decode(b64){
+  var bytes=Uint8Array.from(atob(b64.replace(/\n/g,"")),function(c){return c.charCodeAt(0);});
+  return new TextDecoder("utf-8").decode(bytes);
+}
+
+/* connexion : vérifie le token puis charge menu.json du repo */
+function connect(token){
+  TOKEN=token;
+  showSetupMsg("Vérification du token…",true);
+  gh("/user").then(function(r){
+    if(!r.ok) throw new Error(r.status===401?"Token invalide":"HTTP "+r.status);
+    return gh("/repos/"+REPO+"/contents/"+FILE+"?ref="+BRANCH);
+  }).then(function(r){
+    if(!r.ok) throw new Error(r.status===404?"menu.json introuvable dans le repo":"HTTP "+r.status);
+    return r.json();
+  }).then(function(j){
+    DATA=JSON.parse(b64decode(j.content));
+    DATA.sha=j.sha;
+    localStorage.setItem(LS,TOKEN);
+    showSetupMsg("Connecté. Menu chargé depuis le repo.",true);
+    setTimeout(enterEditor,500);
+  }).catch(function(e){
+    showSetupMsg("Échec : "+e.message,false);
+  });
+}
+
+$("btn-save-id").addEventListener("click",function(){
+  var t=$("token-input").value.trim();
+  if(!t){showSetupMsg("Colle un token.",false);return;}
+  connect(t);
+});
+$("token-input").addEventListener("keydown",function(e){
+  if(e.key==="Enter")$("btn-save-id").click();
+});
+
+/* ---------- éditions ---------- */
+var LISTS=["pizzas","desserts","drinks","options"];
+var esc=function(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){
+  return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});};
+
+function liHtml(kind,it){
+  var hasDesc=kind==="pizzas";
+  return '<div class="eline">'+
+    '<input class="n" value="'+esc(it.name||"")+'" placeholder="Nom">'+
+    '<input class="p" value="'+esc(it.price||"")+'" placeholder="0,00" inputmode="decimal">'+
+    '<button class="del" title="Supprimer">&times;</button></div>'+
+    (hasDesc?'<div class="dwrap"><input class="d" value="'+esc(it.desc||"")+'" placeholder="Ingrédients…"></div>':"");
+}
+
+function bindList(kind){
+  var ul=$("list-"+kind);
+  ul.addEventListener("input",function(e){
+    var li=e.target.closest(".eli");if(!li)return;
+    var idx=+li.dataset.i,it=DATA[kind][idx];if(!it)return;
+    if(e.target.classList.contains("n"))it.name=e.target.value;
+    if(e.target.classList.contains("p"))it.price=e.target.value;
+    if(e.target.classList.contains("d"))it.desc=e.target.value;
+  });
+  ul.addEventListener("click",function(e){
+    if(!e.target.classList.contains("del"))return;
+    var li=e.target.closest(".eli");
+    DATA[kind].splice(+li.dataset.i,1);
+    renderList(kind);
+  });
+}
+
+function renderList(kind){
+  var ul=$("list-"+kind);ul.innerHTML="";
+  (DATA[kind]||[]).forEach(function(it,i){
+    var li=document.createElement("li");
+    li.className="eli"+((kind==="pizzas"&&it.desc)?" has-desc":"");
+    li.dataset.i=i;li.innerHTML=liHtml(kind,it);
+    ul.appendChild(li);
+  });
+  $("count-"+kind).textContent=(DATA[kind]||[]).length;
+}
+
+function renderAll(){
+  var m=DATA.moment||{};
+  $("f-moment-name").value=m.name||"";
+  $("f-moment-desc").value=m.desc||"";
+  $("f-moment-price").value=m.price||"";
+  $("f-moment-note").value=m.note||"";
+  LISTS.forEach(renderList);
+}
+
+["f-moment-name","f-moment-desc","f-moment-price","f-moment-note"].forEach(function(id){
+  $(id).addEventListener("input",function(){
+    DATA.moment=DATA.moment||{};
+    DATA.moment[id==="f-moment-name"?"name":id==="f-moment-desc"?"desc":id==="f-moment-price"?"price":"note"]=this.value;
+  });
+});
+
+document.querySelectorAll(".addbtn").forEach(function(b){
+  b.addEventListener("click",function(){
+    var kind=this.dataset.add;
+    DATA[kind].push(kind==="pizzas"?{name:"",price:"",desc:""}:{name:"",price:""});
+    renderList(kind);
+    var ul=$("list-"+kind);
+    var last=ul.querySelector("li:last-child input");
+    if(last)last.focus();
+  });
+});
+LISTS.forEach(bindList);
+
+/* ---------- sauvegarde ----------
+   1. commit de menu.json dans le repo (API Contents, PUT avec sha)
+   2. miroir du fichier dans le gist secret (lecture publique du site) */
+$("btn-save").addEventListener("click",function(){
+  if(!TOKEN){showSave("Non connecté — recharge la page.",false);return;}
+  var b=this;b.disabled=true;showSave("Enregistrement…",true);
+  DATA.meta=DATA.meta||{};
+  var d=new Date();
+  DATA.meta.updated=String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0");
+  var body=JSON.stringify(DATA,null,2)+"\n";
+  var msg="Mise à jour du menu via admin ("+DATA.meta.updated+")";
+  gh("/repos/"+REPO+"/contents/"+FILE+"?ref="+BRANCH)
+    .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
+    .then(function(j){
+      return fetch("https://api.github.com/repos/"+REPO+"/contents/"+FILE,{
+        method:"PUT",
+        headers:{"Authorization":"Bearer "+TOKEN,"Accept":"application/vnd.github+json"},
+        body:JSON.stringify({message:msg,content:btoa(unescape(encodeURIComponent(body))),
+          sha:j.sha,branch:BRANCH})
+      });
+    }).then(function(r){
+      if(!r.ok) throw new Error("Commit repo : HTTP "+r.status);
+      return fetch("https://api.github.com/gists/"+GIST_ID,{
+        method:"PATCH",
+        headers:{"Authorization":"Bearer "+TOKEN,"Accept":"application/vnd.github+json"},
+        body:JSON.stringify({files:(function(){var f={};f[GIST_FILE]={content:body};return f;})()})
+      });
+    }).then(function(r){
+      if(!r.ok) throw new Error("Miroir gist : HTTP "+r.status);
+      showSave("Enregistré ✓ — visible sur le site d'ici 30 s.",true);
+      b.disabled=false;
+    }).catch(function(e){
+      showSave("Échec : "+e.message,false);
+      b.disabled=false;
+    });
+});
+function showSave(t,ok){var m=$("save-msg");m.textContent=t;m.className="msg "+(ok?"ok":"err");}
+
+/* ---------- démarrage ---------- */
+TOKEN=localStorage.getItem(LS)||null;
+if(TOKEN){
+  connect(TOKEN);
+  $("token-input").value="";
+}else{
+  enterSetup();
+}
+})();
+</script>
+</body>
+</html>
